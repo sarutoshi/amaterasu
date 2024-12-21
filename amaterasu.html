@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>amaterasu</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: black;
+        }
+        canvas {
+            background: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="amaterasu"></canvas>
+    <script>
+        const canvas = document.getElementById('amaterasu');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const scale = 200;
+
+        const points = Array.from({ length: 366 }, (_, day) => {
+            const t = (2 * Math.PI * day) / 365;
+            const declination = -25 * Math.sin(t - Math.PI / 2);
+            const equationOfTime = 7 * Math.sin(2 * t) - 6 * Math.sin(t);
+            return {
+                x: (scale * equationOfTime) / 60,
+                y: (-scale * declination) / 25
+            };
+        });
+
+        let currentDay = 0;
+
+        function drawAnalemma() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach(({ x, y }, i) => {
+                ctx[i === 0 ? 'moveTo' : 'lineTo'](centerX + x, centerY + y);
+            });
+            ctx.stroke();
+
+            const { x, y } = points[currentDay];
+            ctx.beginPath();
+            ctx.arc(centerX + x, centerY + y, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+            currentDay = (currentDay + 1) % points.length;
+            requestAnimationFrame(drawAnalemma);
+        }
+
+        drawAnalemma();
+    </script>
+</body>
+</html>
